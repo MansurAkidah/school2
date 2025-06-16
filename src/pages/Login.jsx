@@ -70,7 +70,7 @@ function Login() {
           JSON.stringify({ status: true, account: tempAccount })
         );
         try {
-          const response =  fetch(`${process.env.REACT_APP_API_URL}/api/addlog`, {
+          const response =  fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/addlog`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
