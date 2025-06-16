@@ -278,10 +278,59 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         
         console.log(`File saved to: ${filePath}`);
         console.log(`Database picture path: ${picturePath}`);
+
+        // Run git pull, then add, commit, and push
+        const { exec } = require('child_process');
+        const repoRoot = path.join(__dirname, '..');
+        
+        // Sequential git operations with proper error handling
+        const gitOperations = async () => {
+          return new Promise((resolve, reject) => {
+            // First pull to sync with remote
+            exec(`cd "${repoRoot}" && git pull origin main`, (pullErr, pullStdout, pullStderr) => {
+              if (pullErr) {
+                console.error('Git pull failed:', pullErr);
+                // Continue anyway - might be first push
+              }
+              
+              // Then add, commit and push
+              exec(
+                `cd "${repoRoot}" && git add public/temp-accounts && git commit -m "added another image" && git push origin main`,
+                (pushErr, pushStdout, pushStderr) => {
+                  if (pushErr) {
+                    console.error('Git push failed:', pushErr);
+                    exec(
+                      `cd "${repoRoot}" && git push origin main --force`,
+                      (forceErr, forceStdout, forceStderr) => {
+                        if (forceErr) {
+                          console.error('Force push also failed:', forceErr);
+                          reject(forceErr);
+                        } else {
+                          console.log('Force push successful:', forceStdout);
+                          resolve(forceStdout);
+                        }
+                      }
+                    );
+                  } else {
+                    console.log('Git operations successful:', pushStdout);
+                    resolve(pushStdout);
+                  }
+                }
+              );
+            });
+          });
+        };
+  
+        // Run git operations asynchronously (don't block the API response)
+        gitOperations().catch(err => {
+          console.error('All git operations failed:', err);
+        });
+
+
       } catch (fileError) {
         console.error('Error saving file:', fileError);
         return res.status(500).json({ error: 'Failed to save uploaded file' });
-      }
+      } 
     }
     console.log(`Confirming Database picture path: ${picturePath}`);
     const finalStudentId = studentId || id;

@@ -20,7 +20,9 @@ function Protected() {
 
   useEffect(() => {
     // Fetch users from backend
-    fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/users`)
+    fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/users`, {
+      headers: {'ngrok-skip-browser-warning': 'true',},
+  })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -50,7 +52,9 @@ function Protected() {
 
   useEffect(() => {
     // Fetch users from backend
-    fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/logs`)
+    fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/logs`, {
+          headers: {'ngrok-skip-browser-warning': 'true',},
+      })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
