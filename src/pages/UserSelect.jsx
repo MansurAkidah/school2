@@ -265,6 +265,10 @@ function UserSelect() {
                       const response = await fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/addusers`, {
                         method: 'POST',
                         body: formData, 
+                        headers: {
+                           'ngrok-skip-browser-warning': 'true',
+           
+          },
                       });
                       if (!response.ok) {
                         const errorData = await response.json();
