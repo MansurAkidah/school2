@@ -187,7 +187,7 @@ function Login() {
       <div className="min-h-screen flex flex-col items-center justify-center gap-[24px] max-w-[840px] mx-auto">
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-rose-700 sm:text-4xl">
           <span className="block">
-            Upps! There is no profile picture associated with this account.
+            Sorry! There is no profile picture associated with this account.
           </span>
         </h2>
         <span className="block mt-4">
@@ -225,11 +225,14 @@ function Login() {
         </h2>
       )}
       {localUserStream && loginResult === "FAILED" && (
-        <h2 className="text-center text-3xl font-extrabold tracking-tight text-rose-700 sm:text-4xl">
-          <span className="block mt-[56px]">
-            Upps! We did not recognize your face.
-          </span>
-        </h2>
+        <div>
+          <h2 className="text-center text-3xl font-extrabold tracking-tight text-rose-700 sm:text-4xl">
+            <span className="block mt-[56px]">
+              Sorry! We did not recognize your face.
+            </span>
+          </h2>
+          <p>Try to find better lighting or adjust the angle</p>
+        </div>
       )}
       {localUserStream && !faceApiLoaded && loginResult === "PENDING" && (
         <h2 className="text-center text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
