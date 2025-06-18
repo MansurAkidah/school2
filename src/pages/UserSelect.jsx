@@ -21,7 +21,7 @@ function UserSelect() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fullUrl = `https://9fdf-105-163-157-155.ngrok-free.app/api/users`;
+        const fullUrl = `https://a77e-105-163-157-155.ngrok-free.app/api/users`;
         console.log('API URL:', apiUrl);
         console.log('Full URL:', fullUrl);
         console.log('Current window location:', window.location.href);
@@ -262,7 +262,7 @@ function UserSelect() {
                     // setCustomUser(user);
                     // setSelected(user);
                     try {
-                      const response = await fetch(`https://9fdf-105-163-157-155.ngrok-free.app/api/addusers`, {
+                      const response = await fetch(`https://a77e-105-163-157-155.ngrok-free.app/api/addusers`, {
                         method: 'POST',
                         body: formData, 
                         headers: {
