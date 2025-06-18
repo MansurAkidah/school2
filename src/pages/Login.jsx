@@ -70,7 +70,11 @@ function Login() {
           JSON.stringify({ status: true, account: tempAccount })
         );
         try {
-          const response =  fetch(`https://5d00-105-163-156-111.ngrok-free.app/api/addlog`, {
+          const url = import.meta.env.VITE_API_URL;
+          const envi = process.env.VITE_API_URL;
+          console.log('url:'+url);
+          console.log('env:'+envi);
+          const response =  fetch(`https://9fdf-105-163-157-155.ngrok-free.app/api/addlog`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
