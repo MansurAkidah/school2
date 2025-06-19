@@ -3,7 +3,7 @@ services:
     name: react-face-auth-frontend
     env: node
     buildCommand: npm install && npm run build
-    startCommand: npm run preview
+    startCommand: npm run dev
     staticPublishPath: dist
     envVars:
       - key: VITE_WS_URL

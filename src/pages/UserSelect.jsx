@@ -21,7 +21,7 @@ function UserSelect() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fullUrl = `https://a77e-105-163-157-155.ngrok-free.app/api/users`;
+        const fullUrl = `${process.env.VITE_API_URL}/api/users`;
         console.log('API URL:', apiUrl);
         console.log('Full URL:', fullUrl);
         console.log('Current window location:', window.location.href);

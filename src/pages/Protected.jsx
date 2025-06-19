@@ -52,7 +52,7 @@ function Protected() {
 
   useEffect(() => {
     // Fetch users from backend
-    fetch(`https://a77e-105-163-157-155.ngrok-free.app/api/logs`, {
+    fetch(`${process.env.VITE_API_URL}/api/logs`, {
           headers: {'ngrok-skip-browser-warning': 'true',},
       })
       .then(response => {

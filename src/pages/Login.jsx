@@ -74,7 +74,7 @@ function Login() {
           const envi = process.env.VITE_API_URL;
           console.log('url:'+url);
           console.log('env:'+envi);
-          const response =  fetch(`https://a77e-105-163-157-155.ngrok-free.app/api/addlog`, {
+          const response =  fetch(`${envi}/api/addlog`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
