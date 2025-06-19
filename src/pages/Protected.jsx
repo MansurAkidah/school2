@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { getApiUrl } from '../utils/environment';
+
+const apiUrl = getApiUrl();
 
 function Protected() {
   const [account, setAccount] = useState(null);
@@ -20,9 +23,7 @@ function Protected() {
 
   useEffect(() => {
     // Fetch users from backend
-    fetch(`https://a77e-105-163-157-155.ngrok-free.app/api/users`, {
-      headers: {'ngrok-skip-browser-warning': 'true',},
-  })
+    fetch(`${apiUrl}/api/users`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -52,9 +53,7 @@ function Protected() {
 
   useEffect(() => {
     // Fetch users from backend
-    fetch(`${process.env.VITE_API_URL}/api/logs`, {
-          headers: {'ngrok-skip-browser-warning': 'true',},
-      })
+    fetch(`${apiUrl}/api/logs`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');

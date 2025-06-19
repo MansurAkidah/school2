@@ -15,20 +15,21 @@ function UserSelect() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   
+  
   const apiUrl = getApiUrl();
   
   // export const config = getConfig();
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const fullUrl = `${process.env.VITE_API_URL}/api/users`;
+        const fullUrl = `${apiUrl}/api/users`;
         console.log('API URL:', apiUrl);
         console.log('Full URL:', fullUrl);
         console.log('Current window location:', window.location.href);
         
         const response = await fetch(fullUrl, {
           headers: {
-            'ngrok-skip-browser-warning': 'true',
+            
             'Content-Type': 'application/json',
           },
         });
@@ -262,13 +263,9 @@ function UserSelect() {
                     // setCustomUser(user);
                     // setSelected(user);
                     try {
-                      const response = await fetch(`https://a77e-105-163-157-155.ngrok-free.app/api/addusers`, {
+                      const response = await fetch(`${apiUrl}/api/addusers`, {
                         method: 'POST',
                         body: formData, 
-                        headers: {
-                           'ngrok-skip-browser-warning': 'true',
-           
-          },
                       });
                       if (!response.ok) {
                         const errorData = await response.json();

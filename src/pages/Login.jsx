@@ -76,7 +76,7 @@ function Login() {
           console.log('env:'+envi);
           const response =  fetch(`${envi}/api/addlog`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', },
+            // headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
           });
           if (!response.ok) {
