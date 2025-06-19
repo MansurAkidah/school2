@@ -25,7 +25,7 @@ export const getEnvironment = () => {
         return 'http://localhost:5000';
       case 'ngrok':
       case 'production':
-        return `https://school2-vdpi.onrender.com/`;
+        return `https://school2-vdpi.onrender.com`;
       default:
         return 'http://localhost:5000';
     }
