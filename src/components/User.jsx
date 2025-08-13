@@ -1,6 +1,7 @@
 import { RadioGroup } from "@headlessui/react";
 
 function User({ user, type }) {
+  console.log("user-=-",user)
   return (
     <RadioGroup.Option
       key={user.id}
@@ -25,11 +26,11 @@ function User({ user, type }) {
                   className="object-cover h-10 w-10 rounded-full"
                   src={
                     type === "CUSTOM"
-                      ? user.picture
+                      ? "https://school2-vdpi.onrender.com"+user.picture
                       : // : import.meta.env.DEV
                         // ? `/temp-accounts/${user.picture}`
                         // : `/react-face-auth/temp-accounts/${user.picture}`
-                        `${user.picture}`
+                        `https://school2-vdpi.onrender.com${user.picture}`
                   }
                   alt={user.fullName}
                 />
