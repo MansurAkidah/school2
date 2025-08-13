@@ -19,6 +19,7 @@ function Protected() {
 
     const { account } = JSON.parse(localStorage.getItem("faceAuth"));
     console.log("Account from localStorage:", account);
+    console.log(["admin", "teacher", "principal"].includes((account?.fullName || account?.program || "").toLowerCase()));
     setAccount(account);
   }, []);
 
