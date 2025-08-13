@@ -68,31 +68,9 @@ function Login() {
         });
         clearInterval(counterInterval);
         clearInterval(faceApiIntervalRef.current);
-        localStorage.setItem(
-          "faceAuth",
-          JSON.stringify({ status: true, account: tempAccount })
-        );
-        try {
-          const url = import.meta.env.VITE_API_URL;
-          const envi = process.env.VITE_API_URL;
-          console.log('url:'+url);
-          console.log('env:'+envi);
-          const response =  fetch(`${apiUrl}/api/addlog`, {
-            method: 'POST',
-            // headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
-          });
-          if (!response.ok) {
-            throw new Error('Failed to log user');
-          }
-          
-          const logEntry =  response.json();
-          console.log('User logged successfully:', logEntry);
-          return logEntry;
-    
-        } catch (error) {
-          console.error('Error logging user:', error);
-        }
+        
+        localStorage.setItem( "faceAuth", JSON.stringify({ status: true, account: tempAccount }));
+
         navigate("/protected", { replace: true });
       }
 

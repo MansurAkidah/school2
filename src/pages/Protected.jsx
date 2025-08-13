@@ -20,6 +20,29 @@ function Protected() {
     const { account } = JSON.parse(localStorage.getItem("faceAuth"));
     console.log("Account from localStorage:", account);
     console.log(["admin", "teacher", "principal"].includes(( account?.program || "").toLowerCase()));
+    if (!["admin", "teacher", "principal"].includes((account?.program || "").toLowerCase())) {
+      try {
+          const url = import.meta.env.VITE_API_URL;
+          const envi = process.env.VITE_API_URL;
+          console.log('url:'+url);
+          console.log('env:'+envi);
+          const response =  fetch(`${apiUrl}/api/addlog`, {
+            method: 'POST',
+            // headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
+          });
+          if (!response.ok) {
+            throw new Error('Failed to log user');
+          }
+          
+          const logEntry =  response.json();
+          console.log('User logged successfully:', logEntry);
+          return logEntry;
+    
+        } catch (error) {
+          console.error('Error logging user:', error);
+        }
+    }
     setAccount(account);
   }, []);
 
