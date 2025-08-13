@@ -501,21 +501,21 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
 
         // Optional: Clean up old profile pictures for this user
         // This prevents accumulation of old profile images
-        try {
-          const files = await fs.readdir(uploadsDir);
-          const oldFiles = files.filter(file => 
-            file.startsWith('profile_') && file !== fileName
-          );
+        // try {
+        //   const files = await fs.readdir(uploadsDir);
+        //   const oldFiles = files.filter(file => 
+        //     file.startsWith('profile_') && file !== fileName
+        //   );
           
-          for (const oldFile of oldFiles) {
-            const oldFilePath = path.join(uploadsDir, oldFile);
-            await fs.unlink(oldFilePath);
-            console.log(`Cleaned up old file: ${oldFilePath}`);
-          }
-        } catch (cleanupError) {
-          console.warn('Warning: Could not clean up old files:', cleanupError);
-          // Don't fail the request if cleanup fails
-        }
+        //   for (const oldFile of oldFiles) {
+        //     const oldFilePath = path.join(uploadsDir, oldFile);
+        //     await fs.unlink(oldFilePath);
+        //     console.log(`Cleaned up old file: ${oldFilePath}`);
+        //   }
+        // } catch (cleanupError) {
+        //   console.warn('Warning: Could not clean up old files:', cleanupError);
+        //   // Don't fail the request if cleanup fails
+        // }
 
       } catch (fileError) {
         console.error('Error saving file:', fileError);
