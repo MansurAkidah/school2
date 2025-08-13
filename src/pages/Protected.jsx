@@ -33,8 +33,8 @@ function Protected() {
       .then(data => {
         const filteredRows = data.filter(
           user =>
-            !["00", "11", "22"].includes(
-              (user.studentId || "").toLowerCase()
+            !["Teacher", "Admin"].includes(
+              (user.program || "").toLowerCase()
             )
         );
         setAccounts(filteredRows);
