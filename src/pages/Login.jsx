@@ -162,11 +162,11 @@ function Login() {
     try {
       const imgPath =
         tempAccount?.type === "CUSTOM"
-          ? tempAccount.picture
+          ? 'https://school2-vdpi.onrender.com'+tempAccount.picture
           : // : import.meta.env.DEV
             // ? `/temp-accounts/${tempAccount.picture}`
             // : `/react-face-auth/temp-accounts/${tempAccount.picture}`;
-            `${tempAccount.picture}`;
+            `https://school2-vdpi.onrender.com${tempAccount.picture}`;
 
       img = await faceapi.fetchImage(imgPath);
     } catch {
