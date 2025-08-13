@@ -24,14 +24,14 @@ function Protected() {
       try {
           const url = import.meta.env.VITE_API_URL;
           const envi = process.env.VITE_API_URL;
-          console.log('url:'+url);
-          console.log('env:'+envi);
+          
           const response =  fetch(`${apiUrl}/api/addlog`, {
             method: 'POST',
             // headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ user_id: account.id }), // Don't set Content-Type header - let browser set it with boundary
           });
           if (!response.ok) {
+            console.error('Failed to log user:', response);
             throw new Error('Failed to log user');
           }
           

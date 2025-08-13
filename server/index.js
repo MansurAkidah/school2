@@ -620,13 +620,15 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
 
 // Add a new log
 app.post('/api/addlog', async (req, res) => {
+  let debugLog = '';
+  
   try {
-    console.log("Starting to add log entry");
+    debugLog += "Starting to add log entry\n";
     
     // Parse request data
     const { user_id } = req.body;
     
-    console.log('Request data:', { user_id });
+    debugLog += `Request data: ${JSON.stringify({ user_id })}\n`;
     
     // Validate required fields
     if (!user_id) {
@@ -643,7 +645,7 @@ app.post('/api/addlog', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    console.log('User exists, proceeding with log insertion');
+    debugLog += 'User exists, proceeding with log insertion\n';
     
     // Insert the new log entry (timeIn will be auto-generated)
     const [result] = await promisePool.query(`
@@ -651,7 +653,7 @@ app.post('/api/addlog', async (req, res) => {
       VALUES (?, CURRENT_TIMESTAMP)
     `, [user_id]);
     
-    console.log('Log inserted successfully, insertId:', result.insertId);
+    debugLog += `Log inserted successfully, insertId: ${result.insertId}\n`;
     
     // Fetch the newly created log with user data
     const [rows] = await promisePool.query(`
@@ -683,28 +685,33 @@ app.post('/api/addlog', async (req, res) => {
     // Format and return the created log with user data
     const createdLog = formatLogWithUser(rows[0]);
     
-    console.log('Log created successfully:', createdLog);
+    debugLog += `Log created successfully: ${JSON.stringify(createdLog)}\n`;
     res.status(201).json(createdLog);
     
   } catch (error) {
-    console.error('Error creating log:', error);
+    const errorMessage = `Error creating log: ${error.message}\nDebug log:\n${debugLog}`;
     
     // Handle specific database errors
     if (error.code === 'ER_NO_REFERENCED_ROW_2') {
       return res.status(400).json({
         error: 'Invalid user ID - user does not exist',
-        details: error.sqlMessage
+        details: error.sqlMessage,
+        debug: errorMessage
       });
     }
     
     if (error.code === 'ER_BAD_NULL_ERROR') {
       return res.status(400).json({
         error: 'Missing required field',
-        details: error.sqlMessage
+        details: error.sqlMessage,
+        debug: errorMessage
       });
     }
     
-    res.status(500).json({ error: 'Failed to create log entry' });
+    res.status(500).json({ 
+      error: 'Failed to create log entry',
+      debug: errorMessage
+    });
   }
 });
 
