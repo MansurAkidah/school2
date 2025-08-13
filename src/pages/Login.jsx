@@ -3,6 +3,7 @@ import * as faceapi from "face-api.js";
 import AuthIdle from "../assets/images/auth-idle.svg";
 import AuthFace from "../assets/images/auth-face.svg";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { getApiUrl } from '../utils/environment';
 
 function Login() {
   const [tempAccount, setTempAccount] = useState("");
@@ -51,6 +52,8 @@ function Login() {
     }
   }, [tempAccount]);
 
+  const apiUrl = getApiUrl();
+
   useEffect(() => {
     if (loginResult === "SUCCESS") {
       const counterInterval = setInterval(() => {
@@ -74,7 +77,7 @@ function Login() {
           const envi = process.env.VITE_API_URL;
           console.log('url:'+url);
           console.log('env:'+envi);
-          const response =  fetch(`${envi}/api/addlog`, {
+          const response =  fetch(`${apiUrl}/api/addlog`, {
             method: 'POST',
             // headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
