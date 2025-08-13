@@ -212,6 +212,8 @@ app.get('/api/users/:id', async (req, res) => {
   }
 });
 
+//#region Add User with Git Operations
+/*
 // Add a new user
 app.post('/api/addusers', upload.single('file'), async (req, res) => {
   try {
@@ -279,6 +281,8 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         console.log(`File saved to: ${filePath}`);
         console.log(`Database picture path: ${picturePath}`);
 
+
+        
         // Run git pull, then add, commit, and push
         const { exec } = require('child_process');
         const repoRoot = path.join(__dirname, '..');
@@ -325,8 +329,8 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         gitOperations().catch(err => {
           console.error('All git operations failed:', err);
         });
-
-
+        
+        
       } catch (fileError) {
         console.error('Error saving file:', fileError);
         return res.status(500).json({ error: 'Failed to save uploaded file' });
@@ -334,9 +338,193 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
     }
     console.log(`Confirming Database picture path: ${picturePath}`);
     const finalStudentId = studentId || id;
-
+    
     console.log('Inserting user with data:', {
       id, fullName, picture:picturePath, email, studentId: finalStudentId,
+      program, level, gpa, status, session, department, faculty, advisor
+    });
+    
+    // Insert the new user
+    const [result] = await promisePool.query(`
+      INSERT INTO users (
+        id, fullName, picture, email, studentId, program, level, gpa,
+        status, session, department, faculty, advisor, timeIn
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          id,
+          fullName,
+      picturePath,
+      email || null,
+      finalStudentId,
+      program || null,
+      level || null,
+      gpa || null,
+      status,
+      session || null,
+      department || null,
+      faculty || null,
+      advisor || null,
+      new Date()
+    ]);
+
+    console.log('User inserted successfully, insertId:', result.insertId);
+
+    // Fetch the newly created user
+    const [rows] = await promisePool.query(`
+      SELECT id, fullName, picture, email, studentId, program, level, 
+      gpa, status, session, department, faculty, advisor, timeIn
+      FROM users WHERE id = ?
+      `, [id]); // Use the provided id, not insertId since you're using custom IDs
+      
+      if (rows.length === 0) {
+        return res.status(500).json({ error: 'Failed to retrieve created user' });
+      }
+      
+      // Format and return the created user
+      const createdUser = {
+        ...formatUser(rows[0]),
+        type,
+        timeIn: rows[0].timeIn
+    };
+
+    console.log('User created successfully:', createdUser);
+    res.status(201).json(createdUser);
+    
+  } catch (error) {
+    console.error('Error creating user:', error);
+    
+    // Handle specific database errors
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ 
+        error: 'User with this information already exists',
+        details: error.sqlMessage 
+      });
+    }
+    // Clean up uploaded file if database operation failed
+    if (req.file && req.body.userData) {
+      try {
+        const userData = JSON.parse(req.body.userData);
+        const userDir = path.join(__dirname, '..', 'temp-accounts', userData.id);
+        await fs.rmdir(userDir, { recursive: true });
+      } catch (cleanupError) {
+        console.error('Error cleaning up failed upload:', cleanupError);
+      }
+    }
+    
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'File size too large (max 5MB)' });
+      }
+      return res.status(400).json({ error: `File upload error: ${error.message}` });
+    }
+    
+    
+    if (error.code === 'ER_BAD_NULL_ERROR') {
+      return res.status(400).json({ 
+        error: 'Missing required field',
+        details: error.sqlMessage 
+      });
+    }
+    
+    res.status(500).json({ error: 'Failed to create user' });
+  }
+});
+*/
+//#endregion
+
+app.post('/api/addusers', upload.single('file'), async (req, res) => {
+  try {
+    console.log("Starting to add a user with file upload");
+
+    // Parse user data from form data
+    let userData;
+    try {
+      userData = JSON.parse(req.body.userData);
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid user data format' });
+    }
+
+    const {
+      id,
+      fullName,
+      picture,
+      email,
+      studentId,
+      program,
+      level,
+      gpa,
+      status = 'active',
+      session,
+      department,
+      faculty,
+      advisor,
+      type = 'CUSTOM'
+    } = userData;
+
+    console.log('Request data:', userData);
+    console.log('File info:', req.file ? {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    } : 'No file uploaded');
+
+    // Validate required fields
+    if (!fullName) {
+      return res.status(400).json({ error: 'Full name is required' });
+    }
+
+    // Handle file upload if file is provided
+    let picturePath = null;
+    if (req.file) {
+      try {
+        // Create user directory path in public/uploads instead of temp-accounts
+        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads', 'users', id);
+        await ensureDirectoryExists(uploadsDir);
+
+        // Get file extension and create unique filename
+        const fileExtension = path.extname(req.file.originalname);
+        const timestamp = Date.now();
+        const fileName = `profile_${timestamp}${fileExtension}`;
+        const filePath = path.join(uploadsDir, fileName);
+
+        // Save file to disk
+        await fs.writeFile(filePath, req.file.buffer);
+
+        // Set picture path for database (relative path that web server can serve)
+        picturePath = `/uploads/users/${id}/${fileName}`;
+
+        console.log(`File saved to: ${filePath}`);
+        console.log(`Database picture path: ${picturePath}`);
+
+        // Optional: Clean up old profile pictures for this user
+        // This prevents accumulation of old profile images
+        try {
+          const files = await fs.readdir(uploadsDir);
+          const oldFiles = files.filter(file => 
+            file.startsWith('profile_') && file !== fileName
+          );
+          
+          for (const oldFile of oldFiles) {
+            const oldFilePath = path.join(uploadsDir, oldFile);
+            await fs.unlink(oldFilePath);
+            console.log(`Cleaned up old file: ${oldFilePath}`);
+          }
+        } catch (cleanupError) {
+          console.warn('Warning: Could not clean up old files:', cleanupError);
+          // Don't fail the request if cleanup fails
+        }
+
+      } catch (fileError) {
+        console.error('Error saving file:', fileError);
+        return res.status(500).json({ error: 'Failed to save uploaded file' });
+      } 
+    }
+
+    console.log(`Confirming Database picture path: ${picturePath}`);
+    const finalStudentId = studentId || id;
+
+    console.log('Inserting user with data:', {
+      id, fullName, picture: picturePath, email, studentId: finalStudentId,
       program, level, gpa, status, session, department, faculty, advisor
     });
 
@@ -370,7 +558,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
       SELECT id, fullName, picture, email, studentId, program, level, 
              gpa, status, session, department, faculty, advisor, timeIn
       FROM users WHERE id = ?
-    `, [id]); // Use the provided id, not insertId since you're using custom IDs
+    `, [id]);
 
     if (rows.length === 0) {
       return res.status(500).json({ error: 'Failed to retrieve created user' });
@@ -388,7 +576,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
 
   } catch (error) {
     console.error('Error creating user:', error);
-    
+
     // Handle specific database errors
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ 
@@ -396,32 +584,33 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         details: error.sqlMessage 
       });
     }
+
     // Clean up uploaded file if database operation failed
     if (req.file && req.body.userData) {
-        try {
-          const userData = JSON.parse(req.body.userData);
-          const userDir = path.join(__dirname, '..', 'temp-accounts', userData.id);
-          await fs.rmdir(userDir, { recursive: true });
-        } catch (cleanupError) {
-          console.error('Error cleaning up failed upload:', cleanupError);
-        }
+      try {
+        const userData = JSON.parse(req.body.userData);
+        const userDir = path.join(__dirname, '..', 'public', 'uploads', 'users', userData.id);
+        await fs.rmdir(userDir, { recursive: true });
+        console.log('Cleaned up failed upload directory:', userDir);
+      } catch (cleanupError) {
+        console.error('Error cleaning up failed upload:', cleanupError);
+      }
     }
-    
+
     if (error instanceof multer.MulterError) {
       if (error.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'File size too large (max 5MB)' });
       }
       return res.status(400).json({ error: `File upload error: ${error.message}` });
     }
-    
-    
+
     if (error.code === 'ER_BAD_NULL_ERROR') {
       return res.status(400).json({ 
         error: 'Missing required field',
         details: error.sqlMessage 
       });
     }
-    
+
     res.status(500).json({ error: 'Failed to create user' });
   }
 });
