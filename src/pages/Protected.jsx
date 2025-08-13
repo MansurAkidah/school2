@@ -24,30 +24,28 @@ function Protected() {
     console.log(["admin", "teacher", "principal"].includes((account?.program || "").toLowerCase()));
     
     if (!["admin", "teacher", "principal"].includes((account?.program || "").toLowerCase())) {
-      try {
-        const response = await fetch(`${apiUrl}/api/addlog`, {
+      fetch(`${apiUrl}/api/addlog`, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json',},
           body: JSON.stringify({ user_id: account.id }),
+        }).then(response => {
+          if (!response.ok) {
+            // Get the actual error message from the response
+            const errorData = response.json();
+            console.error('Failed to log user:', errorData);
+            throw new Error(`Failed to log user: ${errorData.error || response.status}`);
+          }
+        })
+        .then(data => {
+          setLogs(data);
+          if (data.length > 0) {
+            console.log("Logs data:", data);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching users:', error);
+          setLoadingLogs(false);
         });
-
-        if (!response.ok) {
-          // Get the actual error message from the response
-          const errorData = await response.json();
-          console.error('Failed to log user:', errorData);
-          throw new Error(`Failed to log user: ${errorData.error || response.status}`);
-        }
-
-        const logEntry = await response.json();
-        console.log('User logged successfully:', logEntry);
-        return logEntry;
-
-      } catch (error) {
-        console.error('Error logging user:', error);
-        // You might want to show this error to the user or handle it appropriately
-      }
     }
     
     setAccount(account);
