@@ -105,7 +105,7 @@ function Protected() {
         <div className="flex items-center gap-4">
           <img
             className="object-cover h-12 w-12 rounded-full"
-            src={account.picture }
+            src={'https://school2-vdpi.onrender.com'+account.picture }
             alt={account.fullName}
           />
           <span className="text-lg font-bold text-gray-900">{account?.fullName}</span>
@@ -255,8 +255,8 @@ function Protected() {
                 className="object-cover h-28 w-28 rounded-full border-4 border-blue-200 mb-4"
                 src={
                   account?.type === "CUSTOM"
-                    ? account.picture
-                    : `${account.picture}`
+                    ? 'https://school2-vdpi.onrender.com'+account.picture
+                    : `https://school2-vdpi.onrender.com${account.picture}`
                 }
                 alt={account.fullName}
               />
