@@ -74,7 +74,7 @@ function Login() {
         fetch(`${apiUrl}/api/addlog`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json',},
-          body: JSON.stringify({ user_id: account.id }),
+          body: JSON.stringify({ user_id: tempAccount.id }),
         }).then(response => {
           if (!response.ok) {
             // Get the actual error message from the response
@@ -93,7 +93,7 @@ function Login() {
           console.error('Error fetching users:', error);
           setLoadingLogs(false);
         });
-        
+
         navigate("/protected", { replace: true });
       }
 
