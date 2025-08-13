@@ -68,9 +68,32 @@ function Login() {
         });
         clearInterval(counterInterval);
         clearInterval(faceApiIntervalRef.current);
-        
-        localStorage.setItem( "faceAuth", JSON.stringify({ status: true, account: tempAccount }));
 
+        localStorage.setItem( "faceAuth", JSON.stringify({ status: true, account: tempAccount }));
+        
+        fetch(`${apiUrl}/api/addlog`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json',},
+          body: JSON.stringify({ user_id: account.id }),
+        }).then(response => {
+          if (!response.ok) {
+            // Get the actual error message from the response
+            const errorData = response.json();
+            console.error('Failed to log user:', errorData);
+            throw new Error(`Failed to log user: ${errorData.error || response.status}`);
+          }
+        })
+        .then(data => {
+          setLogs(data);
+          if (data.length > 0) {
+            console.log("Logs data:", data);
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching users:', error);
+          setLoadingLogs(false);
+        });
+        
         navigate("/protected", { replace: true });
       }
 

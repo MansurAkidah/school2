@@ -24,28 +24,7 @@ function Protected() {
     console.log(["admin", "teacher", "principal"].includes((account?.program || "").toLowerCase()));
     
     if (!["admin", "teacher", "principal"].includes((account?.program || "").toLowerCase())) {
-      fetch(`${apiUrl}/api/addlog`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json',},
-          body: JSON.stringify({ user_id: account.id }),
-        }).then(response => {
-          if (!response.ok) {
-            // Get the actual error message from the response
-            const errorData = response.json();
-            console.error('Failed to log user:', errorData);
-            throw new Error(`Failed to log user: ${errorData.error || response.status}`);
-          }
-        })
-        .then(data => {
-          setLogs(data);
-          if (data.length > 0) {
-            console.log("Logs data:", data);
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching users:', error);
-          setLoadingLogs(false);
-        });
+      console.log("Student account");
     }
     
     setAccount(account);
