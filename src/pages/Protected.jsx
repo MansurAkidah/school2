@@ -29,7 +29,7 @@ function Protected() {
           const response =  fetch(`${apiUrl}/api/addlog`, {
             method: 'POST',
             // headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify({ user_id: tempAccount.id }), // Don't set Content-Type header - let browser set it with boundary
+            body: JSON.stringify({ user_id: account.id }), // Don't set Content-Type header - let browser set it with boundary
           });
           if (!response.ok) {
             throw new Error('Failed to log user');
