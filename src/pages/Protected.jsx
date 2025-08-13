@@ -19,7 +19,7 @@ function Protected() {
 
     const { account } = JSON.parse(localStorage.getItem("faceAuth"));
     console.log("Account from localStorage:", account);
-    console.log(["admin", "teacher", "principal"].includes((account?.fullName || account?.program || "").toLowerCase()));
+    console.log(["admin", "teacher", "principal"].includes(( account?.program || "").toLowerCase()));
     setAccount(account);
   }, []);
 
@@ -139,7 +139,7 @@ function Protected() {
       </nav>
       {/* Main Content */}
       {["admin", "teacher", "principal"].includes(
-        (account?.fullName || account?.program || "").toLowerCase()
+        (account?.program || "").toLowerCase()
       ) ? (
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="flex justify-between items-center mb-6">
