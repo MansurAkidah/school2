@@ -50,6 +50,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use('/temp-accounts', express.static(path.join(__dirname, '..', 'public', 'temp-accounts')));
+
 
 // Create connection pool instead of single connection
 const pool = mysql.createPool({
@@ -477,8 +480,8 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
     let picturePath = null;
     if (req.file) {
       try {
-        // Create user directory path in public/uploads instead of temp-accounts
-        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads', 'users', id);
+        // Create user directory path in public/temp-accounts instead of temp-accounts
+        const uploadsDir = path.join(__dirname, '..', 'public', 'temp-accounts', id);
         await ensureDirectoryExists(uploadsDir);
 
         // Get file extension and create unique filename
@@ -491,7 +494,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         await fs.writeFile(filePath, req.file.buffer);
 
         // Set picture path for database (relative path that web server can serve)
-        picturePath = `/uploads/users/${id}/${fileName}`;
+        picturePath = `/temp-accounts/${id}/${fileName}`;
 
         console.log(`File saved to: ${filePath}`);
         console.log(`Database picture path: ${picturePath}`);
@@ -589,7 +592,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
     if (req.file && req.body.userData) {
       try {
         const userData = JSON.parse(req.body.userData);
-        const userDir = path.join(__dirname, '..', 'public', 'uploads', 'users', userData.id);
+        const userDir = path.join(__dirname, '..', 'public', 'temp-accounts', userData.id);
         await fs.rmdir(userDir, { recursive: true });
         console.log('Cleaned up failed upload directory:', userDir);
       } catch (cleanupError) {
