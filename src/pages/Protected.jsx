@@ -33,7 +33,7 @@ function Protected() {
       .then(data => {
         const filteredRows = data.filter(
           user =>
-            !["Teacher", "Admin"].includes(
+            !["teacher", "admin"].includes(
               (user.program || "").toLowerCase()
             )
         );
@@ -137,7 +137,7 @@ function Protected() {
       </nav>
       {/* Main Content */}
       {["admin", "teacher", "principal"].includes(
-        (account?.fullName || "").toLowerCase()
+        (account?.fullName || account?.program || "").toLowerCase()
       ) ? (
         <div className="max-w-7xl mx-auto px-4 py-16">
           <div className="flex justify-between items-center mb-6">
