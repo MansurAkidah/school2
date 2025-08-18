@@ -333,18 +333,22 @@ function Protected() {
                       </tr>
                     </thead>
                     <tbody>
-                      {(account?.grades || [
-                        { course: "Data Structures", code: "CSC301", grade: "A", credit: 3 },
-                        { course: "Operating Systems", code: "CSC305", grade: "B+", credit: 3 },
-                        { course: "Database Systems", code: "CSC307", grade: "A-", credit: 2 },
-                      ]).map((g, idx) => (
-                        <tr key={idx} className="border-b">
-                          <td className="px-3 py-2">{g.course}</td>
-                          <td className="px-3 py-2">{g.code}</td>
-                          <td className="px-3 py-2">{g.grade}</td>
-                          <td className="px-3 py-2">{g.credit}</td>
+                      {account?.grades && account.grades.length > 0 ? (
+                        account.grades.map((g, idx) => (
+                          <tr key={idx} className="border-b">
+                            <td className="px-3 py-2">{g.course}</td>
+                            <td className="px-3 py-2">{g.code}</td>
+                            <td className="px-3 py-2">{g.grade}</td>
+                            <td className="px-3 py-2">{g.credit}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td className="px-3 py-2 text-center" colSpan={4}>
+                            No data found for this student
+                          </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
