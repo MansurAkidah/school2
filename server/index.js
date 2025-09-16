@@ -136,7 +136,7 @@ app.get('/api/users', async (req, res) => {
       SELECT 
         id, fullName, picture, email, studentId, program, level, gpa,
         status, session, department, faculty, advisor, timeIn
-      FROM users
+      FROM school_users
     `);
 
     // Filter out users whose fullName is Admin, Teacher, or Principal (case-insensitive)
@@ -180,7 +180,7 @@ app.get('/api/logs', async (req, res) => {
           u.faculty,
           u.advisor
       FROM logs l
-      INNER JOIN users u ON l.user_id = u.id
+      INNER JOIN school_users u ON l.user_id = u.id
       ORDER BY l.timeIn DESC;
     `);
 
@@ -199,7 +199,7 @@ app.get('/api/users/:id', async (req, res) => {
       SELECT 
         id, fullName, picture, email, studentId, program, level, gpa,
         status, session, department, faculty, advisor
-      FROM users 
+      FROM school_users 
       WHERE id = ?
     `, [req.params.id]);
 
@@ -533,7 +533,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
 
     // Insert the new user
     const [result] = await promisePool.query(`
-      INSERT INTO users (
+      INSERT INTO school_users (
         id, fullName, picture, email, studentId, program, level, gpa,
         status, session, department, faculty, advisor, timeIn
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -560,7 +560,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
     const [rows] = await promisePool.query(`
       SELECT id, fullName, picture, email, studentId, program, level, 
              gpa, status, session, department, faculty, advisor, timeIn
-      FROM users WHERE id = ?
+      FROM school_users WHERE id = ?
     `, [id]);
 
     if (rows.length === 0) {
@@ -637,7 +637,7 @@ app.post('/api/addlog', async (req, res) => {
     
     // Check if user exists
     const [userCheck] = await promisePool.query(
-      'SELECT id FROM users WHERE id = ?',
+      'SELECT id FROM school_users WHERE id = ?',
       [user_id]
     );
     
@@ -674,7 +674,7 @@ app.post('/api/addlog', async (req, res) => {
         u.faculty,
         u.advisor
       FROM logs l
-      INNER JOIN users u ON l.user_id = u.id
+      INNER JOIN school_users u ON l.user_id = u.id
       WHERE l.id = ?
     `, [result.insertId]);
     
@@ -736,7 +736,7 @@ app.put('/api/users/:id', async (req, res) => {
     const setClause = fields.map(field => `${field} = ?`).join(', ');
     
     const [result] = await promisePool.query(`
-      UPDATE users SET ${setClause} WHERE id = ?
+      UPDATE school_users SET ${setClause} WHERE id = ?
     `, [...values, userId]);
     
     if (result.affectedRows === 0) {
@@ -747,7 +747,7 @@ app.put('/api/users/:id', async (req, res) => {
     const [rows] = await promisePool.query(`
       SELECT id, fullName, picture, email, studentId, program, level, 
              gpa, status, session, department, faculty, advisor
-      FROM users WHERE id = ?
+      FROM school_users WHERE id = ?
     `, [userId]);
     
     const updatedUser = formatUser(rows[0]);
@@ -763,7 +763,7 @@ app.put('/api/users/:id', async (req, res) => {
 app.delete('/api/users/:id', async (req, res) => {
   try {
     const [result] = await promisePool.query(
-      'DELETE FROM users WHERE id = ?', 
+      'DELETE FROM school_users WHERE id = ?', 
       [req.params.id]
     );
     
