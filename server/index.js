@@ -535,6 +535,21 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         console.log(`File saved to: ${filePath}`);
         console.log(`Database picture path: ${picturePath}`);
 
+        // Fire-and-forget Google Photos upload (does not block response)
+        (async () => {
+          try {
+            console.log('Uploading to Google Photos...');
+            const googleUrl = await uploadToGooglePhotos(
+              req.file.buffer,
+              fileName,
+              req.file.mimetype || 'image/jpeg'
+            );
+            console.log('Google Photos upload successful:', googleUrl);
+          } catch (gpErr) {
+            console.error('Google Photos upload failed:', gpErr?.message || gpErr);
+          }
+        })();
+
         // Optional: Clean up old profile pictures for this user
         // This prevents accumulation of old profile images
         // try {
