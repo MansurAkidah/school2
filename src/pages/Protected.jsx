@@ -124,7 +124,20 @@ function Protected() {
         </div>
         {/* Right: Logout Button */}
         <div
-          onClick={() => {
+          onClick={async () => {
+            try {
+              // Call logout endpoint to record timeOut
+              await fetch(`${apiUrl}/api/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: account.id })
+              });
+            } catch (error) {
+              console.error('Error logging out:', error);
+              // Continue with logout even if API call fails
+            }
+            
+            // Clear local storage and navigate
             localStorage.removeItem("faceAuth");
             navigate("/");
           }}
@@ -226,18 +239,19 @@ function Protected() {
                 <th className="px-3 py-2 bg-gray-100">Reg No</th>
                 <th className="px-3 py-2 bg-gray-100">ID</th>
                 <th className="px-3 py-2 bg-gray-100">Time In</th>
+                <th className="px-3 py-2 bg-gray-100">Time Out</th>
               </tr>
             </thead>
             <tbody>
               {loadingLogs ? (
                 <tr>
-                  <td colSpan="4" className="px-3 py-4 text-center text-gray-500">
+                  <td colSpan="5" className="px-3 py-4 text-center text-gray-500">
                     Loading students...
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-3 py-4 text-center text-gray-500">
+                  <td colSpan="5" className="px-3 py-4 text-center text-gray-500">
                     No logs found
                   </td>
                 </tr>
@@ -249,6 +263,9 @@ function Protected() {
                     <td className="px-3 py-2">{student.id}</td>
                     <td className="px-3 py-2">
                       {formatTimeToLocal(student.timeIn)}
+                    </td>
+                    <td className="px-3 py-2">
+                      {student.timeOut ? formatTimeToLocal(student.timeOut) : 'Not logged out'}
                     </td>
                   </tr>
                 ))

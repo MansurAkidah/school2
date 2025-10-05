@@ -113,6 +113,7 @@ const formatLogWithUser = (logData) => ({
   logId: logData.log_id,
   userId: logData.user_id,
   timeIn: logData.timeIn,
+  timeOut: logData.timeOut,
   id: logData.user_id, 
   fullName: logData.fullName,
   picture: logData.picture,
@@ -167,6 +168,7 @@ app.get('/api/logs', async (req, res) => {
           l.id as log_id,
           l.user_id,
           l.timeIn,
+          l.timeOut,
           u.fullName,
           u.picture,
           u.email,
@@ -678,10 +680,23 @@ app.post('/api/addlog', async (req, res) => {
     
     debugLog += 'User exists, proceeding with log insertion\n';
     
+    // First, ensure timeOut column exists in logs table
+    try {
+      await promisePool.query(`
+        ALTER TABLE logs ADD COLUMN timeOut DATETIME NULL
+      `);
+      debugLog += 'Added timeOut column to logs table\n';
+    } catch (alterError) {
+      // Column might already exist, which is fine
+      if (alterError.code !== 'ER_DUP_FIELDNAME') {
+        debugLog += `Warning: Could not add timeOut column: ${alterError.message}\n`;
+      }
+    }
+    
     // Insert the new log entry (timeIn will be auto-generated)
     const [result] = await promisePool.query(`
-      INSERT INTO logs (user_id, location_id, timeIn) 
-      VALUES (?, ?, CURRENT_TIMESTAMP)
+      INSERT INTO logs (user_id, location_id, timeIn, timeOut) 
+      VALUES (?, ?, CURRENT_TIMESTAMP, DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))
     `, [user_id, location_id || null]);
     
     debugLog += `Log inserted successfully, insertId: ${result.insertId}\n`;
@@ -692,6 +707,7 @@ app.post('/api/addlog', async (req, res) => {
         l.id as log_id,
         l.user_id,
         l.timeIn,
+        l.timeOut,
         u.fullName,
         u.picture,
         u.email,
@@ -743,6 +759,92 @@ app.post('/api/addlog', async (req, res) => {
       error: 'Failed to create log entry',
       debug: errorMessage
     });
+  }
+});
+
+// Logout endpoint - updates the most recent log entry with actual logout time
+app.post('/api/logout', async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    
+    // Validate required fields
+    if (!user_id) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    // Check if user exists
+    const [userCheck] = await promisePool.query(
+      'SELECT id FROM school_users WHERE id = ?',
+      [user_id]
+    );
+    
+    if (userCheck.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Find the most recent log entry for this user that doesn't have a timeOut yet
+    const [recentLog] = await promisePool.query(`
+      SELECT id, timeIn, timeOut 
+      FROM logs 
+      WHERE user_id = ? 
+      ORDER BY timeIn DESC 
+      LIMIT 1
+    `, [user_id]);
+    
+    if (recentLog.length === 0) {
+      return res.status(404).json({ error: 'No recent log entry found for this user' });
+    }
+    
+    // Update the timeOut field with current timestamp
+    const [result] = await promisePool.query(`
+      UPDATE logs 
+      SET timeOut = CURRENT_TIMESTAMP 
+      WHERE id = ?
+    `, [recentLog[0].id]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(500).json({ error: 'Failed to update logout time' });
+    }
+    
+    // Fetch the updated log entry with user data
+    const [updatedLog] = await promisePool.query(`
+      SELECT 
+        l.id as log_id,
+        l.user_id,
+        l.timeIn,
+        l.timeOut,
+        u.fullName,
+        u.picture,
+        u.email,
+        u.studentId,
+        u.program,
+        u.level,
+        u.gpa,
+        u.status,
+        u.session,
+        u.department,
+        u.faculty,
+        u.advisor
+      FROM logs l
+      INNER JOIN school_users u ON l.user_id = u.id
+      WHERE l.id = ?
+    `, [recentLog[0].id]);
+    
+    if (updatedLog.length === 0) {
+      return res.status(500).json({ error: 'Failed to retrieve updated log entry' });
+    }
+    
+    // Format and return the updated log with user data
+    const updatedLogData = formatLogWithUser(updatedLog[0]);
+    
+    res.json({
+      message: 'Logout successful',
+      log: updatedLogData
+    });
+    
+  } catch (error) {
+    console.error('Error during logout:', error);
+    res.status(500).json({ error: 'Failed to process logout' });
   }
 });
 
