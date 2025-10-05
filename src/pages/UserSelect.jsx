@@ -15,6 +15,8 @@ function UserSelect() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState('');
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState('');
   
   
   const apiUrl = getApiUrl();
@@ -62,8 +64,33 @@ function UserSelect() {
         setLoading(false);
       }
     };
+
+    const fetchLocations = async () => {
+      try {
+        const fullUrl = `${apiUrl}/api/locations`;
+        console.log('Fetching locations from:', fullUrl);
+        
+        const response = await fetch(fullUrl, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Locations fetched:', data);
+        setLocations(data);
+      } catch (error) {
+        console.error('Error fetching locations:', error);
+        // Don't set error message for locations as it's not critical
+      }
+    };
   
     fetchUsers();
+    fetchLocations();
   }, []);
 
   if (loading) {
@@ -183,6 +210,24 @@ function UserSelect() {
                 </div>
               </div>
 
+              <div className="flex gap-4 mb-4">
+                <div className="flex-1">
+                  <select
+                    id="location"
+                    value={selectedLocation}
+                    onChange={(e) => setSelectedLocation(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Select location</option>
+                    {locations.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.location_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <label
                 htmlFor="dropzone-file"
                 className="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:border-indigo-200 hover:bg-gray-100"
@@ -231,6 +276,11 @@ function UserSelect() {
                       return;
                     }
 
+                    if (!selectedLocation) {
+                      setErrorMessage("Please select a location.");
+                      return;
+                    }
+
                     let file = files[0];
                     let name = file.name;
                     let suffixArr = name.split("."),
@@ -273,7 +323,8 @@ function UserSelect() {
                       fullName: studentName.trim(),
                       program: userRole,
                       type: "CUSTOM",
-                      email: nameWithoutSuffix + '@gmail.com'
+                      email: nameWithoutSuffix + '@gmail.com',
+                      location_id: selectedLocation
                     }));
 
                     // setCustomUser(user);
@@ -307,7 +358,7 @@ function UserSelect() {
           )}
           <Link
             to="/login"
-            state={{ account: selected }}
+            state={{ account: selected, location_id: selectedLocation }}
             className="mt-4 inline-flex items-center rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
           >
             Continue

@@ -192,6 +192,24 @@ app.get('/api/logs', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
+
+// Get all locations
+app.get('/api/locations', async (req, res) => {
+  try {
+    console.log('API /api/locations route hit');
+    const [rows] = await promisePool.query(`
+      SELECT id, location_name, location_abrv
+      FROM locations
+      ORDER BY location_name ASC
+    `);
+
+    console.log('locations retrieved:', rows);
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching locations:', error);
+    res.status(500).json({ error: 'Failed to fetch locations' });
+  }
+});
 // Get user by ID
 app.get('/api/users/:id', async (req, res) => {
   try {
@@ -461,7 +479,8 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
       department,
       faculty,
       advisor,
-      type = 'CUSTOM'
+      type = 'CUSTOM',
+      location_id
     } = userData;
 
     console.log('Request data:', userData);
@@ -626,9 +645,9 @@ app.post('/api/addlog', async (req, res) => {
     debugLog += "Starting to add log entry\n";
     
     // Parse request data
-    const { user_id } = req.body;
+    const { user_id, location_id } = req.body;
     
-    debugLog += `Request data: ${JSON.stringify({ user_id })}\n`;
+    debugLog += `Request data: ${JSON.stringify({ user_id, location_id })}\n`;
     
     // Validate required fields
     if (!user_id) {
@@ -645,13 +664,25 @@ app.post('/api/addlog', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
+    // Check if location exists (if provided)
+    if (location_id) {
+      const [locationCheck] = await promisePool.query(
+        'SELECT id FROM locations WHERE id = ?',
+        [location_id]
+      );
+      
+      if (locationCheck.length === 0) {
+        return res.status(404).json({ error: 'Location not found' });
+      }
+    }
+    
     debugLog += 'User exists, proceeding with log insertion\n';
     
     // Insert the new log entry (timeIn will be auto-generated)
     const [result] = await promisePool.query(`
-      INSERT INTO logs (user_id, timeIn) 
-      VALUES (?, CURRENT_TIMESTAMP)
-    `, [user_id]);
+      INSERT INTO logs (user_id, location_id, timeIn) 
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+    `, [user_id, location_id || null]);
     
     debugLog += `Log inserted successfully, insertId: ${result.insertId}\n`;
     
