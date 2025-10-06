@@ -6,7 +6,7 @@ require('dotenv').config();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const uploadToCloudinary = require('./uploadToCloudinary');
+const uploadToCloudinary = require('./cloudinary');
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage(); // Store in memory temporarily
