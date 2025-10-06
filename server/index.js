@@ -6,7 +6,7 @@ require('dotenv').config();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const uploadToGooglePhotos = require('./googlePhotos');
+const uploadToCloudinary = require('./uploadToCloudinary');
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage(); // Store in memory temporarily
@@ -305,17 +305,17 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         console.log(`File saved to: ${filePath}`);
         console.log(`Database picture path: ${picturePath}`);
 
-        // Fire-and-forget Google Photos upload (does not block response)
+        // Fire-and-forget S3 upload (does not block response)
         (async () => {
           try {
-            const googleUrl = await uploadToGooglePhotos(
+            const s3Url = await uploadToS3(
               req.file.buffer,
               fileName,
               req.file.mimetype || 'image/jpeg'
             );
-            console.log('Google Photos upload successful:', googleUrl);
-          } catch (gpErr) {
-            console.error('Google Photos upload failed:', gpErr?.message || gpErr);
+            console.log('S3 upload successful:', s3Url);
+          } catch (s3Err) {
+            console.error('S3 upload failed:', s3Err?.message || s3Err);
           }
         })();
 
@@ -535,18 +535,17 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         console.log(`File saved to: ${filePath}`);
         console.log(`Database picture path: ${picturePath}`);
 
-        // Fire-and-forget Google Photos upload (does not block response)
+        // Fire-and-forget Cloudinary upload
         (async () => {
           try {
-            console.log('Uploading to Google Photos...');
-            const googleUrl = await uploadToGooglePhotos(
+            console.log('Uploading to cloudinary...');
+            const cloudinaryUrl = await uploadToCloudinary(
               req.file.buffer,
-              fileName,
-              req.file.mimetype || 'image/jpeg'
+              fileName
             );
-            console.log('Google Photos upload successful:', googleUrl);
-          } catch (gpErr) {
-            console.error('Google Photos upload failed:', gpErr?.message || gpErr);
+            console.log('Cloudinary upload successful:', cloudinaryUrl);
+          } catch (cloudinaryErr) {
+            console.error('Cloudinary upload failed:', cloudinaryErr?.message || cloudinaryErr);
           }
         })();
 
