@@ -248,13 +248,13 @@ function Protected() {
               {loadingLogs ? (
                 <tr>
                   <td colSpan="5" className="px-3 py-4 text-center text-gray-500">
-                    Loading students...
+                    Loading attendance logs...
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="px-3 py-4 text-center text-gray-500">
-                    No logs found
+                    No attendance logs found
                   </td>
                 </tr>
               ) : (

@@ -199,10 +199,11 @@ app.get('/api/logs', async (req, res) => {
 
     // const formattedUsers = rows.map(formatUser);
     const formattedLogs = rawLogsData.map(formatLogWithUser);
+    console.log('formattedLogs', formattedLogs);
     res.json(formattedLogs);
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    console.error('Error fetching logs:', error);
+    res.status(500).json({ error: 'Failed to fetch logs' });
   }
 });
 

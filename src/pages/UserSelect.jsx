@@ -17,9 +17,60 @@ function UserSelect() {
   const [userRole, setUserRole] = useState('');
   const [locations, setLocations] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('');
-  
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [pendingUser, setPendingUser] = useState(null);
   
   const apiUrl = getApiUrl();
+  
+  const handleUserSelect = (user) => {
+    // If user is an admin, skip location selection
+    if (user.role === "admin" || userRole === "admin") {
+      setSelected(user);
+      setShowLocationModal(false);
+      return;
+    }
+    
+    // For non-admin users, show location selection
+    setPendingUser(user);
+    setShowLocationModal(true);
+  };
+  
+  const handleLocationSelect = (locationId) => {
+    const location = locations.find(loc => loc.id === locationId);
+    setSelectedLocation(locationId);
+    setShowLocationModal(false);
+    
+    // If we have a pending user, select it after location is chosen
+    if (pendingUser) {
+      // Update the pending user with the selected location
+      const userWithLocation = {
+        ...pendingUser,
+        location_id: locationId,
+        location_name: location?.location_name || ''
+      };
+      setSelected(userWithLocation);
+      setPendingUser(null);
+    }
+  };
+  
+  const LocationModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-md w-full">
+        <h3 className="text-lg font-medium mb-4">Select Location</h3>
+        <div className="space-y-2">
+          {locations.map((location) => (
+            <button
+              key={location.id}
+              onClick={() => handleLocationSelect(location.id)}
+              className="w-full text-left px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded"
+            >
+              {location.location_name} ({location.location_abrv})
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   
   // export const config = getConfig();
   useEffect(() => {
@@ -136,36 +187,35 @@ function UserSelect() {
       <h1 className="text-2xl font-semibold">Log In</h1>
       <div className="w-full p-4 text-right">
         <div className="mx-auto w-full max-w-md">
-          <RadioGroup value={selected} onChange={setSelected}>
+          <RadioGroup value={selected} onChange={handleUserSelect} className="space-y-4">
             <RadioGroup.Label className="sr-only">Server size</RadioGroup.Label>
-            <div className="space-y-2">
-              {accounts.map((account) => (
-                <User key={account.id} user={account} />
-              ))}
-              {customUser && (
-                <div className="relative">
-                  <User key={customUser.id} user={customUser} type="CUSTOM" />
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="text-indigo-800 w-6 h-6 absolute top-1/2 -translate-y-1/2 right-[-32px] cursor-pointer"
-                    onClick={() => {
-                      setCustomUser(null);
-                      selected?.type === "CUSTOM" && setSelected(accounts[0]);
-                    }}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </div>
-              )}
-            </div>
+            {accounts.map((account) => (
+              <User key={account.id} user={account} type={account.type} />
+            ))}
+            {showLocationModal && <LocationModal />}
+            {customUser && (
+              <div className="relative">
+                <User key={customUser.id} user={customUser} type="CUSTOM" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="text-indigo-800 w-6 h-6 absolute top-1/2 -translate-y-1/2 right-[-32px] cursor-pointer"
+                  onClick={() => {
+                    setCustomUser(null);
+                    selected?.type === "CUSTOM" && setSelected(accounts[0]);
+                  }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+            )}
           </RadioGroup>
           {!customUser && (
             <div className="flex flex-col items-center justify-center w-full mt-3">
@@ -358,8 +408,23 @@ function UserSelect() {
           )}
           <Link
             to="/login"
-            state={{ account: selected, location_id: selectedLocation }}
-            className="mt-4 inline-flex items-center rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600"
+            state={{ 
+              account: selected, 
+              location_id: selected?.location_id || selectedLocation,
+              location_name: selected?.location_name || locations.find(loc => loc.id === selectedLocation)?.location_name || ''
+            }}
+            className={`mt-4 inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm ${
+              (selected || customUser) ? 'bg-indigo-500 hover:bg-indigo-600' : 'bg-gray-400 cursor-not-allowed'
+            }`}
+            onClick={(e) => {
+              if (!selected && !customUser) {
+                e.preventDefault();
+                setErrorMessage('Please select a user or create a new one');
+              } else if (!selectedLocation && !(selected?.role === 'admin' || userRole === 'admin')) {
+                e.preventDefault();
+                setErrorMessage('Please select a location');
+              }
+            }}
           >
             Continue
             <svg
