@@ -22,11 +22,15 @@ function UserSelect() {
   
   const apiUrl = getApiUrl();
   
-  const handleUserSelect = (user) => {
+  const handleUserSelect = (user, event) => {
+    // Prevent the default RadioGroup behavior
+    event?.stopPropagation();
+    
     // If user is an admin, skip location selection
     if (user.role === "admin" || userRole === "admin") {
       setSelected(user);
       setShowLocationModal(false);
+      setErrorMessage('');
       return;
     }
     
@@ -54,19 +58,45 @@ function UserSelect() {
   };
   
   const LocationModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg max-w-md w-full">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      onClick={(e) => {
+        // Close modal if clicking on the backdrop
+        if (e.target === e.currentTarget) {
+          setShowLocationModal(false);
+          setErrorMessage('Please select a location to continue');
+        }
+      }}
+    >
+      <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
         <h3 className="text-lg font-medium mb-4">Select Location</h3>
-        <div className="space-y-2">
-          {locations.map((location) => (
-            <button
-              key={location.id}
-              onClick={() => handleLocationSelect(location.id)}
-              className="w-full text-left px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded"
-            >
-              {location.location_name} ({location.location_abrv})
-            </button>
-          ))}
+        <p className="text-sm text-gray-600 mb-4">Please select a location for {pendingUser?.fullName}</p>
+        <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
+          {locations.length === 0 ? (
+            <p className="text-gray-500 text-sm">No locations available</p>
+          ) : (
+            locations.map((location) => (
+              <button
+                key={location.id}
+                onClick={() => handleLocationSelect(location.id)}
+                className="w-full text-left px-4 py-3 bg-white border border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 rounded-md transition-colors duration-200"
+              >
+                <div className="font-medium">{location.location_name}</div>
+                <div className="text-sm text-gray-500">{location.location_abrv}</div>
+              </button>
+            ))
+          )}
+        </div>
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={() => {
+              setShowLocationModal(false);
+              setErrorMessage('Please select a location to continue');
+            }}
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -190,7 +220,12 @@ function UserSelect() {
           <RadioGroup value={selected} onChange={handleUserSelect} className="space-y-4">
             <RadioGroup.Label className="sr-only">Server size</RadioGroup.Label>
             {accounts.map((account) => (
-              <User key={account.id} user={account} type={account.type} />
+              <User 
+                key={account.id} 
+                user={account} 
+                type={account.type} 
+                onClick={(e) => handleUserSelect(account, e)}
+              />
             ))}
             {showLocationModal && <LocationModal />}
             {customUser && (
@@ -413,8 +448,12 @@ function UserSelect() {
               location_id: selected?.location_id || selectedLocation,
               location_name: selected?.location_name || locations.find(loc => loc.id === selectedLocation)?.location_name || ''
             }}
-            className={`mt-4 inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm ${
-              (selected || customUser) ? 'bg-indigo-500 hover:bg-indigo-600' : 'bg-gray-400 cursor-not-allowed'
+            className={`mt-4 inline-flex items-center rounded-md px-4 py-2.5 text-sm font-medium shadow-sm transition-colors duration-200 ${
+              (selected || customUser) 
+                ? (selectedLocation || selected?.role === 'admin' || userRole === 'admin' 
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
+                    : 'bg-indigo-100 text-indigo-400 cursor-not-allowed')
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
             onClick={(e) => {
               if (!selected && !customUser) {
@@ -422,7 +461,8 @@ function UserSelect() {
                 setErrorMessage('Please select a user or create a new one');
               } else if (!selectedLocation && !(selected?.role === 'admin' || userRole === 'admin')) {
                 e.preventDefault();
-                setErrorMessage('Please select a location');
+                setShowLocationModal(true);
+                setErrorMessage('Please select a location to continue');
               }
             }}
           >

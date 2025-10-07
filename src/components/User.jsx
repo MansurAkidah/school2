@@ -1,16 +1,21 @@
 import { RadioGroup } from "@headlessui/react";
 import { getImageUrl } from "../utils/imageUtils";
 
-function User({ user, type }) {
+function User({ user, type, onClick }) {
   console.log("user-=-",user)
   return (
     <RadioGroup.Option
       key={user.id}
       value={user}
-      className={({ checked }) =>
+      onClick={onClick}
+      className={({ active, checked }) =>
         `${
-          checked ? "bg-indigo-600 bg-opacity-75 text-white" : "bg-white"
-        } relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none`
+          checked 
+            ? 'bg-indigo-600 text-white ring-2 ring-indigo-600 ring-offset-2' 
+            : active 
+              ? 'bg-indigo-50' 
+              : 'bg-white'
+        } relative flex cursor-pointer rounded-lg px-5 py-4 shadow-sm hover:bg-indigo-50 transition-colors duration-200`
       }
     >
       {({ checked }) => (
@@ -20,7 +25,7 @@ function User({ user, type }) {
               <RadioGroup.Label
                 as="div"
                 className={`flex items-center gap-x-6 font-medium ${
-                  checked ? "text-white" : "text-gray-900"
+                  checked ? 'text-white' : 'text-gray-900'
                 }`}
               >
                 <img
