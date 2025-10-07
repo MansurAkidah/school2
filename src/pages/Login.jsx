@@ -4,6 +4,7 @@ import AuthIdle from "../assets/images/auth-idle.svg";
 import AuthFace from "../assets/images/auth-face.svg";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { getApiUrl } from '../utils/environment';
+import { getImageUrl } from '../utils/imageUtils';
 
 function Login() {
   const [tempAccount, setTempAccount] = useState("");
@@ -213,13 +214,7 @@ function Login() {
     let img;
 
     try {
-      const imgPath =
-        tempAccount?.type === "CUSTOM"
-          ? 'https://school2-vdpi.onrender.com'+tempAccount.picture
-          : // : import.meta.env.DEV
-            // ? `/temp-accounts/${tempAccount.picture}`
-            // : `/react-face-auth/temp-accounts/${tempAccount.picture}`;
-            `https://school2-vdpi.onrender.com${tempAccount.picture}`;
+      const imgPath = getImageUrl(tempAccount.picture);
 
       img = await faceapi.fetchImage(imgPath);
     } catch {

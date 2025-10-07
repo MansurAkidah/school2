@@ -1,4 +1,5 @@
 import { RadioGroup } from "@headlessui/react";
+import { getImageUrl } from "../utils/imageUtils";
 
 function User({ user, type }) {
   console.log("user-=-",user)
@@ -24,14 +25,7 @@ function User({ user, type }) {
               >
                 <img
                   className="object-cover h-10 w-10 rounded-full"
-                  src={
-                    type === "CUSTOM"
-                      ? "https://school2-vdpi.onrender.com"+user.picture
-                      : // : import.meta.env.DEV
-                        // ? `/temp-accounts/${user.picture}`
-                        // : `/react-face-auth/temp-accounts/${user.picture}`
-                        `https://school2-vdpi.onrender.com${user.picture}`
-                  }
+                  src={getImageUrl(user.picture)}
                   alt={user.fullName}
                 />
                 {user.fullName}

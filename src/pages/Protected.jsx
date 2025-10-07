@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getApiUrl } from '../utils/environment';
+import { getImageUrl } from '../utils/imageUtils';
 
 const apiUrl = getApiUrl();
 
@@ -117,7 +118,7 @@ function Protected() {
         <div className="flex items-center gap-4">
           <img
             className="object-cover h-12 w-12 rounded-full"
-            src={'https://school2-vdpi.onrender.com'+account.picture }
+            src={getImageUrl(account.picture)}
             alt={account.fullName}
           />
           <span className="text-lg font-bold text-gray-900">{account?.fullName}</span>

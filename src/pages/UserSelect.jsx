@@ -276,7 +276,7 @@ function UserSelect() {
                       return;
                     }
 
-                    if (!selectedLocation) {
+                    if (!selectedLocation && userRole !== "admin") {
                       setErrorMessage("Please select a location.");
                       return;
                     }
