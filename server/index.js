@@ -523,7 +523,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
     let picturePath = null;
     if (req.file) {
       try {
-        // Create user directory path in public/temp-accounts instead of temp-accounts
+        // Create user directory path in public/temp-accounts
         const uploadsDir = path.join(__dirname, '..', 'public', 'temp-accounts', id);
         await ensureDirectoryExists(uploadsDir);
 
@@ -533,46 +533,46 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
         const fileName = `profile_${timestamp}${fileExtension}`;
         const filePath = path.join(uploadsDir, fileName);
 
-        // Save file to disk
-        await fs.writeFile(filePath, req.file.buffer);
-
-        // Set picture path for database (relative path that web server can serve)
-        picturePath = `/temp-accounts/${id}/${fileName}`;
-
-        console.log(`File saved to: ${filePath}`);
-        console.log(`Database picture path: ${picturePath}`);
-
-        // Fire-and-forget Cloudinary upload
-        (async () => {
-          try {
+        // First try Cloudinary upload
+        try {
             console.log('Uploading to cloudinary...');
-            const cloudinaryUrl = await uploadToCloudinary(
-              req.file.buffer,
-              fileName
-            );
-            console.log('Cloudinary upload successful:', cloudinaryUrl);
-            picturePath = cloudinaryUrl;
-          } catch (cloudinaryErr) {
-            console.error('Cloudinary upload failed:', cloudinaryErr?.message || cloudinaryErr);
-          }
-        })();
-
-        // Optional: Clean up old profile pictures for this user
-        // This prevents accumulation of old profile images
-        // try {
-        //   const files = await fs.readdir(uploadsDir);
-        //   const oldFiles = files.filter(file => 
-        //     file.startsWith('profile_') && file !== fileName
-        //   );
+          const cloudinaryUrl = await uploadToCloudinary(
+            req.file.buffer,
+            fileName
+          );
           
-        //   for (const oldFile of oldFiles) {
-        //     const oldFilePath = path.join(uploadsDir, oldFile);
-        //     await fs.unlink(oldFilePath);
-        //     console.log(`Cleaned up old file: ${oldFilePath}`);
+          if (cloudinaryUrl) {
+            console.log('Cloudinary upload successful, using Cloudinary URL');
+            picturePath = cloudinaryUrl;
+          } else {
+            throw new Error('Cloudinary returned no URL');
+          }
+        } catch (cloudinaryErr) {
+          console.warn('Cloudinary upload failed, falling back to local storage:', cloudinaryErr?.message || cloudinaryErr);
+          
+          // Fallback: Save file to local disk
+          await fs.writeFile(filePath, req.file.buffer);
+          picturePath = `/temp-accounts/${id}/${fileName}`;
+          console.log(`File saved locally as fallback: ${filePath}`);
+        }
+
+        // Clean up old profile pictures for this user if using local storage
+        // if (!picturePath.startsWith('http')) {  // Only clean up if using local storage
+        //   try {
+        //     const files = await fs.readdir(uploadsDir);
+        //     const oldFiles = files.filter(file => 
+        //       file.startsWith('profile_') && file !== fileName
+        //     );
+            
+        //     for (const oldFile of oldFiles) {
+        //       const oldFilePath = path.join(uploadsDir, oldFile);
+        //       await fs.unlink(oldFilePath);
+        //       console.log(`Cleaned up old file: ${oldFilePath}`);
+        //     }
+        //   } catch (cleanupError) {
+        //     console.warn('Warning: Could not clean up old files:', cleanupError);
+        //     // Don't fail the request if cleanup fails
         //   }
-        // } catch (cleanupError) {
-        //   console.warn('Warning: Could not clean up old files:', cleanupError);
-        //   // Don't fail the request if cleanup fails
         // }
 
       } catch (fileError) {
