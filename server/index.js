@@ -551,6 +551,7 @@ app.post('/api/addusers', upload.single('file'), async (req, res) => {
               fileName
             );
             console.log('Cloudinary upload successful:', cloudinaryUrl);
+            picturePath = cloudinaryUrl;
           } catch (cloudinaryErr) {
             console.error('Cloudinary upload failed:', cloudinaryErr?.message || cloudinaryErr);
           }
