@@ -14,16 +14,12 @@ cloudinary.config({
  * @returns {Promise<string>} - The secure URL of the uploaded file
  */
 async function uploadToCloudinary(photoBuffer, fileName) {
+  cloudinary.config({
+    cloud_name: 'dpvmradxz',
+    api_key: '788374283869228',
+    api_secret: 'VH97ymikCHJ3fkS0XEZx-qhBUPE'
+  });
   console.log('Cloudinary config:', cloudinary.config());
-  if(!cloudinary.config()) {
-    console.error('Cloudinary config not found');
-
-    cloudinary.config({
-      cloud_name: 'dpvmradxz',
-      api_key: '788374283869228',
-      api_secret: 'VH97ymikCHJ3fkS0XEZx-qhBUPE'
-    });
-  }
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       { 
