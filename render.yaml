@@ -21,7 +21,7 @@ services:
     name: react-face-auth-backend
     env: node
     buildCommand: cd server && npm install
-    startCommand: cd server && node index.mjs
+    startCommand: cd server && NODE_OPTIONS='--experimental-modules --es-module-specifier-resolution=node' node index.mjs
     envVars:
       - key: DB_HOST
         value: ${DB_HOST}
