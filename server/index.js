@@ -132,6 +132,8 @@ const formatLogWithUser = (logData) => ({
   gpa: logData.gpa,
   status: logData.status,
   session: logData.session,
+  location_name: logData.location_name,
+  location_abrv: logData.location_abrv,
   department: logData.department,
   faculty: logData.faculty,
   advisor: logData.advisor

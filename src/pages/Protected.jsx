@@ -236,9 +236,9 @@ function Protected() {
           <table className="min-w-full text-sm text-left">
             <thead>
               <tr>
+                <th className="px-3 py-2 bg-gray-100">Profile</th>
                 <th className="px-3 py-2 bg-gray-100">Name</th>
                 <th className="px-3 py-2 bg-gray-100">Reg No</th>
-                <th className="px-3 py-2 bg-gray-100">ID</th>
                 <th className="px-3 py-2 bg-gray-100">Location</th>
                 <th className="px-3 py-2 bg-gray-100">Time In</th>
                 <th className="px-3 py-2 bg-gray-100">Time Out</th>
@@ -260,9 +260,15 @@ function Protected() {
               ) : (
                 logs.map((student, idx) => (
                   <tr key={student.id || idx} className="border-b hover:bg-gray-50">
+                    <td className="px-3 py-2">
+                      <img
+                        className="object-cover h-12 w-12 rounded-full"
+                        src={getImageUrl(student.picture)}
+                        alt={student.fullName}
+                      />
+                    </td>
                     <td className="px-3 py-2">{student.fullName}</td>
                     <td className="px-3 py-2">{student.studentId || 'N/A'}</td>
-                    <td className="px-3 py-2">{student.id}</td>
                     <td className="px-3 py-2">{student.location_name}</td>
                     <td className="px-3 py-2">
                       {formatTimeToLocal(student.timeIn)}
