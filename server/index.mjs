@@ -1,12 +1,19 @@
-const express = require('express');
-const mysql = require('mysql2');
-const cors = require('cors');
-require('dotenv').config();
+import express from 'express';
+import mysql from 'mysql2';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import multer from 'multer';
+import path from 'path';
+import { promises as fs } from 'fs';
+import { fileURLToPath } from 'url';
+import uploadToCloudinary from './uploadToCloudinary.js';
 
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs').promises;
-const uploadToCloudinary = require('./uploadToCloudinary');
+// Configure dotenv
+dotenv.config();
+
+// Get directory name in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage(); // Store in memory temporarily
