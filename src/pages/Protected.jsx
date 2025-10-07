@@ -239,6 +239,7 @@ function Protected() {
                 <th className="px-3 py-2 bg-gray-100">Name</th>
                 <th className="px-3 py-2 bg-gray-100">Reg No</th>
                 <th className="px-3 py-2 bg-gray-100">ID</th>
+                <th className="px-3 py-2 bg-gray-100">Location</th>
                 <th className="px-3 py-2 bg-gray-100">Time In</th>
                 <th className="px-3 py-2 bg-gray-100">Time Out</th>
               </tr>
@@ -262,6 +263,7 @@ function Protected() {
                     <td className="px-3 py-2">{student.fullName}</td>
                     <td className="px-3 py-2">{student.studentId || 'N/A'}</td>
                     <td className="px-3 py-2">{student.id}</td>
+                    <td className="px-3 py-2">{student.location_name}</td>
                     <td className="px-3 py-2">
                       {formatTimeToLocal(student.timeIn)}
                     </td>

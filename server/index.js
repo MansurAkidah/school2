@@ -188,9 +188,12 @@ app.get('/api/logs', async (req, res) => {
           u.session,
           u.department,
           u.faculty,
-          u.advisor
+          u.advisor,
+          loc.location_name,
+          loc.location_abrv
       FROM logs l
       INNER JOIN school_users u ON l.user_id = u.id
+      INNER JOIN locations loc ON l.location_id = loc.id
       ORDER BY l.timeIn DESC;
     `);
 
