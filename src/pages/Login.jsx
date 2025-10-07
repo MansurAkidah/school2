@@ -47,9 +47,27 @@ function Login() {
         .then(async () => {
           const labeledFaceDescriptors = await loadLabeledImages();
           setLabeledFaceDescriptors(labeledFaceDescriptors);
+          return labeledFaceDescriptors;
         })
-        .then(() => setModelsLoaded(true));
+        .then(() => {
+          setModelsLoaded(true);
+          // Initialize camera and start face detection after models are loaded
+          getLocalUserVideo();
+        })
+        .catch(error => {
+          console.error('Error initializing face detection:', error);
+        });
     }
+    
+    // Cleanup function to stop camera when component unmounts
+    return () => {
+      if (localUserStream) {
+        localUserStream.getTracks().forEach(track => track.stop());
+      }
+      if (faceApiIntervalRef.current) {
+        clearInterval(faceApiIntervalRef.current);
+      }
+    };
   }, [tempAccount]);
 
   const apiUrl = getApiUrl();
@@ -106,19 +124,47 @@ function Login() {
   }, [loginResult, counter]);
 
   const getLocalUserVideo = async () => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: false, video: true })
-      .then((stream) => {
-        videoRef.current.srcObject = stream;
-        setLocalUserStream(stream);
-      })
-      .catch((err) => {
-        console.error("error:", err);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: false, 
+        video: { 
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user' 
+        } 
       });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(err => {
+          console.error('Error playing video:', err);
+        });
+        setLocalUserStream(stream);
+        // Start face detection after video starts playing
+        videoRef.current.onplaying = () => {
+          if (modelsLoaded && Object.keys(labeledFaceDescriptors).length > 0) {
+            scanFace();
+          }
+        };
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      alert('Could not access the camera. Please ensure you have granted camera permissions.');
+    }
   };
 
   const scanFace = async () => {
-    faceapi.matchDimensions(canvasRef.current, videoRef.current);
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    // Set canvas dimensions to match video
+    canvasRef.current.width = videoRef.current.videoWidth || 640;
+    canvasRef.current.height = videoRef.current.videoHeight || 360;
+    
+    faceapi.matchDimensions(canvasRef.current, {
+      width: videoRef.current.videoWidth || 640,
+      height: videoRef.current.videoHeight || 360
+    });
+    
     const faceApiInterval = setInterval(async () => {
       const detections = await faceapi
         .detectAllFaces(videoRef.current)
